@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -13,29 +11,22 @@ public class MainManager : MonoBehaviour
     public Text ScoreText;
     public Text BestScoreText;
     public GameObject GameOverText;
-    
+
     private bool m_Started = false;
     private int m_Points;
-    
+
     private bool m_GameOver = false;
-    private float _bestScoreForPlayer = 0;
-
-    public void Awake()
-    {
-        // load best score
-    }
-
 
     // Start is called before the first frame update
     void Start()
     {
-        var userName = GameController.Instance?.UserName ?? "";
-        BestScoreText.text = $"Best Score : {userName} : {_bestScoreForPlayer}";
+        ShowHighScore();
+        ShowCurrentScore();
 
         const float step = 0.6f;
         int perLine = Mathf.FloorToInt(4.0f / step);
-        
-        int[] pointCountArray = new [] {1,1,2,2,5,5};
+
+        int[] pointCountArray = new[] { 1, 1, 2, 2, 5, 5 };
         for (int i = 0; i < LineCount; ++i)
         {
             for (int x = 0; x < perLine; ++x)
@@ -45,6 +36,15 @@ public class MainManager : MonoBehaviour
                 brick.PointValue = pointCountArray[i];
                 brick.onDestroyed.AddListener(AddPoint);
             }
+        }
+    }
+
+    private void ShowHighScore()
+    {
+        var highScore = GameController.Instance.HighScore;
+        if (highScore != null)
+        {
+            BestScoreText.text = $"Best Score : {highScore.UserName} : {highScore.Value}";
         }
     }
 
@@ -75,11 +75,18 @@ public class MainManager : MonoBehaviour
     void AddPoint(int point)
     {
         m_Points += point;
-        ScoreText.text = $"Score : {m_Points}";
+        ShowCurrentScore();
+    }
+
+    private void ShowCurrentScore()
+    {
+        ScoreText.text = $"{GameController.Instance.CurrentPlayerName} - Score : {m_Points}";
     }
 
     public void GameOver()
     {
+        GameController.Instance.SaveScore(m_Points);
+        ShowHighScore();
         m_GameOver = true;
         GameOverText.SetActive(true);
     }
