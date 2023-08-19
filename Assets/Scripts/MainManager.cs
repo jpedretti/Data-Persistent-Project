@@ -11,17 +11,27 @@ public class MainManager : MonoBehaviour
     public Rigidbody Ball;
 
     public Text ScoreText;
+    public Text BestScoreText;
     public GameObject GameOverText;
     
     private bool m_Started = false;
     private int m_Points;
     
     private bool m_GameOver = false;
+    private float _bestScoreForPlayer = 0;
 
-    
+    public void Awake()
+    {
+        // load best score
+    }
+
+
     // Start is called before the first frame update
     void Start()
     {
+        var userName = GameController.Instance?.UserName ?? "";
+        BestScoreText.text = $"Best Score : {userName} : {_bestScoreForPlayer}";
+
         const float step = 0.6f;
         int perLine = Mathf.FloorToInt(4.0f / step);
         
