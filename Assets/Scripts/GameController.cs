@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class GameController : MonoBehaviour
 {
@@ -25,9 +26,11 @@ public class GameController : MonoBehaviour
     public string CurrentPlayerName { get; private set; }
 
     private Gamedata _gameData;
-    public Score HighScore { get; private set; }
+    public Score HighScore { get { return _gameData?.Scores?.FirstOrDefault(); } }
 
-    public string LastPlayerName { get; private set; }
+    public List<Score> HighScores { get { return _gameData?.Scores ?? new(); } }
+
+    public string LastPlayerName { get { return _gameData?.LastPlayerName ?? ""; } }
 
     public void Awake()
     {
@@ -37,8 +40,6 @@ public class GameController : MonoBehaviour
             DontDestroyOnLoad(gameObject);
             string path = GetPath();
             LoadGameData(path);
-            LoadHighScore();
-            LastPlayerName = _gameData.LastPlayerName;
         }
         else
         {
@@ -78,18 +79,23 @@ public class GameController : MonoBehaviour
             };
         }
         _gameData.LastPlayerName = CurrentPlayerName;
-        LoadHighScore();
         File.WriteAllText(GetPath(), JsonUtility.ToJson(_gameData));
     }
 
+    private static string GetPath() => $"{Application.persistentDataPath} /savefile.json";
 
-    public void LoadHighScore()
+    public void Restart() => SceneManager.LoadScene(1);
+
+    public void GoToMenu() => SceneManager.LoadScene(0);
+
+    public void GoToHighScore() => SceneManager.LoadScene(2);
+
+    public void ClearData()
     {
-        if (_gameData != null)
+        if (File.Exists(GetPath()))
         {
-            HighScore = _gameData.Scores.FirstOrDefault();
+            File.Delete(GetPath());
+            _gameData = null;
         }
     }
-
-    private static string GetPath() => $"{Application.persistentDataPath} /savefile.json";
 }
